@@ -26,12 +26,27 @@ canvas {
     display: block;
 }
 
+#loading {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #111;
+    color: white;
+
+    font-size: 22px;
+}
+
 #menu {
     position: fixed;
     inset: 0;
     z-index: 100;
 
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
 
@@ -51,7 +66,7 @@ canvas {
 
     padding: 35px;
 
-    background: rgba(15,15,20,.92);
+    background: rgba(15,15,20,.94);
 
     border: 1px solid rgba(255,255,255,.15);
 
@@ -83,7 +98,7 @@ canvas {
     border: none;
     border-radius: 10px;
 
-    background: #ffffff;
+    background: white;
     color: #111;
 
     font-size: 17px;
@@ -97,7 +112,6 @@ canvas {
 }
 
 #hud {
-
     position: fixed;
 
     top: 15px;
@@ -116,21 +130,16 @@ canvas {
     font-size: 13px;
 
     pointer-events: none;
-
     user-select: none;
 }
 
 #hud-title {
-
     font-size: 18px;
-
     font-weight: bold;
-
     margin-bottom: 5px;
 }
 
 #crosshair {
-
     position: fixed;
 
     left: 50%;
@@ -148,12 +157,10 @@ canvas {
         0 0 5px black;
 
     pointer-events: none;
-
     user-select: none;
 }
 
 #location {
-
     position: fixed;
 
     bottom: 18px;
@@ -176,32 +183,10 @@ canvas {
     pointer-events: none;
 }
 
-#loading {
-
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 200;
-
-    display: flex;
-
-    justify-content: center;
-    align-items: center;
-
-    background: #111;
-
-    color: white;
-
-    font-size: 22px;
-}
-
 .mobile-controls {
-
     display: none;
 
     position: fixed;
-
     inset: 0;
 
     z-index: 30;
@@ -210,7 +195,6 @@ canvas {
 }
 
 .mobile-btn {
-
     position: absolute;
 
     width: 58px;
@@ -227,8 +211,9 @@ canvas {
     font-size: 22px;
 
     pointer-events: auto;
-
     user-select: none;
+
+    touch-action: none;
 }
 
 #forward {
@@ -249,6 +234,33 @@ canvas {
 #right {
     bottom: 75px;
     left: 150px;
+}
+
+#error {
+    display: none;
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 1000;
+
+    padding: 30px;
+
+    background: #111;
+
+    color: white;
+
+    overflow: auto;
+}
+
+#error h2 {
+    color: #ff6b6b;
+}
+
+#error pre {
+    white-space: pre-wrap;
+    color: #ccc;
 }
 
 @media (max-width: 700px) {
@@ -275,9 +287,19 @@ canvas {
 
 <body>
 
+
+<!-- =========================================================
+     LOADING
+========================================================= -->
+
 <div id="loading">
     Construindo cidade...
 </div>
+
+
+<!-- =========================================================
+     MENU
+========================================================= -->
 
 <div id="menu">
 
@@ -290,8 +312,7 @@ canvas {
         </p>
 
         <p>
-            Explore as ruas, caminhe pelos quarteirões
-            e descubra a cidade.
+            Explore ruas, prédios e quarteirões.
         </p>
 
         <p>
@@ -299,7 +320,10 @@ canvas {
             <b>Mouse</b> para olhar
         </p>
 
-        <button class="play-button">
+        <button
+            class="play-button"
+            type="button"
+        >
             ENTRAR NA CIDADE
         </button>
 
@@ -307,35 +331,119 @@ canvas {
 
 </div>
 
+
+<!-- =========================================================
+     HUD
+========================================================= -->
+
 <div id="hud">
 
     <div id="hud-title">
-        CIDADE 3D
+        🏙️ CIDADE 3D
     </div>
 
-    <div>W A S D — movimentação</div>
-    <div>Mouse — câmera</div>
-    <div>ESC — liberar câmera</div>
+    <div>
+        W A S D — movimentação
+    </div>
+
+    <div>
+        Mouse — câmera
+    </div>
+
+    <div>
+        ESC — liberar câmera
+    </div>
 
 </div>
+
 
 <div id="crosshair">
     +
 </div>
 
+
 <div id="location">
     Distrito Central
 </div>
 
+
+<!-- =========================================================
+     CONTROLES MOBILE
+========================================================= -->
+
 <div class="mobile-controls">
 
-    <button class="mobile-btn" id="forward">▲</button>
-    <button class="mobile-btn" id="backward">▼</button>
-    <button class="mobile-btn" id="left">◀</button>
-    <button class="mobile-btn" id="right">▶</button>
+    <button
+        class="mobile-btn"
+        id="forward"
+        type="button"
+    >
+        ▲
+    </button>
+
+    <button
+        class="mobile-btn"
+        id="backward"
+        type="button"
+    >
+        ▼
+    </button>
+
+    <button
+        class="mobile-btn"
+        id="left"
+        type="button"
+    >
+        ◀
+    </button>
+
+    <button
+        class="mobile-btn"
+        id="right"
+        type="button"
+    >
+        ▶
+    </button>
 
 </div>
 
+
+<!-- =========================================================
+     ERROR
+========================================================= -->
+
+<div id="error">
+
+    <h2>⚠️ Erro ao carregar o jogo</h2>
+
+    <p>
+        O navegador encontrou um problema ao iniciar o
+        motor 3D.
+    </p>
+
+    <pre id="error-text"></pre>
+
+</div>
+
+
+<!-- =========================================================
+     IMPORT MAP
+========================================================= -->
+
+<script type="importmap">
+
+{
+    "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js"
+    }
+}
+
+</script>
+
+
+<!-- =========================================================
+     JOGO
+========================================================= -->
 
 <script type="module">
 
@@ -349,9 +457,26 @@ from
 "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/controls/PointerLockControls.js";
 
 
-// ============================================================
-// CONFIGURAÇÃO
-// ============================================================
+/* =========================================================
+   ELEMENTOS
+========================================================= */
+
+const loading =
+    document.getElementById("loading");
+
+const menu =
+    document.getElementById("menu");
+
+const errorScreen =
+    document.getElementById("error");
+
+const errorText =
+    document.getElementById("error-text");
+
+
+/* =========================================================
+   CONFIGURAÇÃO
+========================================================= */
 
 const CITY_SIZE = 260;
 
@@ -364,9 +489,9 @@ const PLAYER_HEIGHT = 2;
 const PLAYER_SPEED = 18;
 
 
-// ============================================================
-// CENA
-// ============================================================
+/* =========================================================
+   CENA
+========================================================= */
 
 const scene =
     new THREE.Scene();
@@ -382,9 +507,9 @@ scene.fog =
     );
 
 
-// ============================================================
-// CÂMERA
-// ============================================================
+/* =========================================================
+   CÂMERA
+========================================================= */
 
 const camera =
     new THREE.PerspectiveCamera(
@@ -402,9 +527,9 @@ camera.position.set(
 );
 
 
-// ============================================================
-// RENDERER
-// ============================================================
+/* =========================================================
+   RENDERER
+========================================================= */
 
 const renderer =
     new THREE.WebGLRenderer({
@@ -418,7 +543,7 @@ renderer.setSize(
 
 renderer.setPixelRatio(
     Math.min(
-        window.devicePixelRatio,
+        window.devicePixelRatio || 1,
         2
     )
 );
@@ -433,9 +558,9 @@ document.body.appendChild(
 );
 
 
-// ============================================================
-// ILUMINAÇÃO
-// ============================================================
+/* =========================================================
+   ILUMINAÇÃO
+========================================================= */
 
 const skyLight =
     new THREE.HemisphereLight(
@@ -482,9 +607,9 @@ sun.shadow.camera.bottom =
 scene.add(sun);
 
 
-// ============================================================
-// MATERIAIS
-// ============================================================
+/* =========================================================
+   MATERIAIS
+========================================================= */
 
 const materials = {
 
@@ -541,9 +666,9 @@ const materials = {
 };
 
 
-// ============================================================
-// CHÃO
-// ============================================================
+/* =========================================================
+   CHÃO
+========================================================= */
 
 const ground =
     new THREE.Mesh(
@@ -562,11 +687,11 @@ ground.receiveShadow = true;
 scene.add(ground);
 
 
-// ============================================================
-// FUNÇÃO CUBO
-// ============================================================
+/* =========================================================
+   FUNÇÃO CUBO
+========================================================= */
 
-function box(
+function createBox(
     width,
     height,
     depth,
@@ -605,13 +730,13 @@ function box(
 }
 
 
-// ============================================================
-// RUAS
-// ============================================================
+/* =========================================================
+   RUAS HORIZONTAIS
+========================================================= */
 
 function createRoadX(z) {
 
-    box(
+    createBox(
         CITY_SIZE * 2,
         .12,
         ROAD_WIDTH,
@@ -621,9 +746,8 @@ function createRoadX(z) {
         z
     );
 
-    // calçadas
 
-    box(
+    createBox(
         CITY_SIZE * 2,
         .25,
         3,
@@ -633,7 +757,8 @@ function createRoadX(z) {
         z - 9
     );
 
-    box(
+
+    createBox(
         CITY_SIZE * 2,
         .25,
         3,
@@ -643,7 +768,6 @@ function createRoadX(z) {
         z + 9
     );
 
-    // faixa central
 
     for (
         let x = -CITY_SIZE;
@@ -651,7 +775,7 @@ function createRoadX(z) {
         x += 12
     ) {
 
-        box(
+        createBox(
             6,
             .03,
             .25,
@@ -666,9 +790,13 @@ function createRoadX(z) {
 }
 
 
+/* =========================================================
+   RUAS VERTICAIS
+========================================================= */
+
 function createRoadZ(x) {
 
-    box(
+    createBox(
         ROAD_WIDTH,
         .12,
         CITY_SIZE * 2,
@@ -678,7 +806,8 @@ function createRoadZ(x) {
         0
     );
 
-    box(
+
+    createBox(
         3,
         .25,
         CITY_SIZE * 2,
@@ -688,7 +817,8 @@ function createRoadZ(x) {
         0
     );
 
-    box(
+
+    createBox(
         3,
         .25,
         CITY_SIZE * 2,
@@ -698,13 +828,14 @@ function createRoadZ(x) {
         0
     );
 
+
     for (
         let z = -CITY_SIZE;
         z < CITY_SIZE;
         z += 12
     ) {
 
-        box(
+        createBox(
             .25,
             .03,
             6,
@@ -719,9 +850,9 @@ function createRoadZ(x) {
 }
 
 
-// ============================================================
-// CONSTRUIR RUAS
-// ============================================================
+/* =========================================================
+   CRIAR RUAS
+========================================================= */
 
 for (
     let i = -250;
@@ -736,9 +867,9 @@ for (
 }
 
 
-// ============================================================
-// PRÉDIOS
-// ============================================================
+/* =========================================================
+   CORES DOS PRÉDIOS
+========================================================= */
 
 const buildingColors = [
 
@@ -753,6 +884,10 @@ const buildingColors = [
 
 ];
 
+
+/* =========================================================
+   CRIAR PRÉDIO
+========================================================= */
 
 function createBuilding(
     x,
@@ -770,26 +905,25 @@ function createBuilding(
             )
         ];
 
-    const material =
+
+    const buildingMaterial =
         new THREE.MeshStandardMaterial({
-            color
+            color: color
         });
 
-    const building =
-        box(
-            width,
-            height,
-            depth,
-            material,
-            x,
-            height / 2,
-            z
-        );
+
+    createBox(
+        width,
+        height,
+        depth,
+        buildingMaterial,
+        x,
+        height / 2,
+        z
+    );
 
 
-    // --------------------------
-    // TELHADO
-    // --------------------------
+    /* TELHADO */
 
     const roof =
         new THREE.Mesh(
@@ -814,9 +948,7 @@ function createBuilding(
     scene.add(roof);
 
 
-    // --------------------------
-    // JANELAS
-    // --------------------------
+    /* JANELAS */
 
     const floors =
         Math.max(
@@ -825,6 +957,7 @@ function createBuilding(
                 height / 4
             )
         );
+
 
     const windowsX =
         Math.max(
@@ -869,6 +1002,7 @@ function createBuilding(
                     materials.window
                 );
 
+
             window.position.set(
                 wx,
                 y,
@@ -877,21 +1011,19 @@ function createBuilding(
                 .05
             );
 
+
             scene.add(window);
 
         }
 
     }
 
-
-    return building;
-
 }
 
 
-// ============================================================
-// QUARTEIRÕES
-// ============================================================
+/* =========================================================
+   GERAR PRÉDIOS
+========================================================= */
 
 for (
     let bx = -225;
@@ -905,29 +1037,27 @@ for (
         bz += ROAD_SPACING
     ) {
 
+        const centerX =
+            bx +
+            ROAD_SPACING / 2;
 
-        // não colocar prédios exatamente
-        // sobre as ruas
 
-        const areaCenterX =
-            bx + ROAD_SPACING / 2;
-
-        const areaCenterZ =
-            bz + ROAD_SPACING / 2;
+        const centerZ =
+            bz +
+            ROAD_SPACING / 2;
 
 
         if (
-            Math.abs(areaCenterX) >
+            Math.abs(centerX) >
             CITY_SIZE ||
-            Math.abs(areaCenterZ) >
+            Math.abs(centerZ) >
             CITY_SIZE
         ) {
+
             continue;
+
         }
 
-
-        // alguns quarteirões possuem
-        // mais de um prédio
 
         const number =
             Math.random() > .45
@@ -945,9 +1075,11 @@ for (
                 13 +
                 Math.random() * 9;
 
+
             const depth =
                 13 +
                 Math.random() * 9;
+
 
             const height =
                 8 +
@@ -958,21 +1090,17 @@ for (
                 (Math.random() - .5) *
                 18;
 
+
             const offsetZ =
                 (Math.random() - .5) *
                 18;
 
 
             createBuilding(
-                areaCenterX +
-                offsetX,
-
-                areaCenterZ +
-                offsetZ,
-
+                centerX + offsetX,
+                centerZ + offsetZ,
                 width,
                 depth,
-
                 height
             );
 
@@ -983,16 +1111,14 @@ for (
 }
 
 
-// ============================================================
-// ÁRVORES
-// ============================================================
+/* =========================================================
+   ÁRVORES
+========================================================= */
 
 function createTree(
     x,
     z
 ) {
-
-    // tronco
 
     const trunk =
         new THREE.Mesh(
@@ -1005,18 +1131,18 @@ function createTree(
             materials.treeTrunk
         );
 
+
     trunk.position.set(
         x,
         2,
         z
     );
 
+
     trunk.castShadow = true;
 
     scene.add(trunk);
 
-
-    // copa
 
     const leaves =
         new THREE.Mesh(
@@ -1028,11 +1154,13 @@ function createTree(
             materials.treeLeaves
         );
 
+
     leaves.position.set(
         x,
         5,
         z
     );
+
 
     leaves.castShadow = true;
 
@@ -1041,8 +1169,9 @@ function createTree(
 }
 
 
-// colocar árvores nas áreas
-// entre prédios
+/* =========================================================
+   GERAR ÁRVORES
+========================================================= */
 
 for (
     let i = 0;
@@ -1054,17 +1183,17 @@ for (
         (Math.random() - .5) *
         480;
 
+
     const z =
         (Math.random() - .5) *
         480;
 
 
-    // evita o centro das ruas
-
     const nearRoadX =
         Math.abs(
             x % ROAD_SPACING
         ) < 12;
+
 
     const nearRoadZ =
         Math.abs(
@@ -1087,25 +1216,24 @@ for (
 }
 
 
-// ============================================================
-// POSTES
-// ============================================================
+/* =========================================================
+   POSTES
+========================================================= */
 
 function createLamp(
     x,
     z
 ) {
 
-    const pole =
-        box(
-            .18,
-            5,
-            .18,
-            materials.pole,
-            x,
-            2.5,
-            z
-        );
+    createBox(
+        .18,
+        5,
+        .18,
+        materials.pole,
+        x,
+        2.5,
+        z
+    );
 
 
     const head =
@@ -1118,11 +1246,13 @@ function createLamp(
             materials.lamp
         );
 
+
     head.position.set(
         x,
         5.15,
         z
     );
+
 
     scene.add(head);
 
@@ -1151,9 +1281,9 @@ for (
 }
 
 
-// ============================================================
-// CARROS DECORATIVOS
-// ============================================================
+/* =========================================================
+   CARROS
+========================================================= */
 
 function createCar(
     x,
@@ -1161,31 +1291,36 @@ function createCar(
     rotation
 ) {
 
-    const carBody =
-        box(
+    const carMaterial =
+        new THREE.MeshStandardMaterial({
+            color:
+                buildingColors[
+                    Math.floor(
+                        Math.random() *
+                        buildingColors.length
+                    )
+                ]
+        });
+
+
+    const body =
+        createBox(
             4,
             1.2,
             2,
-            new THREE.MeshStandardMaterial({
-                color:
-                    buildingColors[
-                        Math.floor(
-                            Math.random() *
-                            buildingColors.length
-                        )
-                    ]
-            }),
+            carMaterial,
             x,
             .8,
             z
         );
 
-    carBody.rotation.y =
+
+    body.rotation.y =
         rotation;
 
 
     const roof =
-        box(
+        createBox(
             2,
             .8,
             1.6,
@@ -1197,54 +1332,12 @@ function createCar(
             z
         );
 
+
     roof.rotation.y =
         rotation;
 
-
-    const wheelMaterial =
-        new THREE.MeshStandardMaterial({
-            color: 0x111111
-        });
-
-
-    for (
-        const side of [-1, 1]
-    ) {
-
-        const wheel1 =
-            new THREE.Mesh(
-                new THREE.CylinderGeometry(
-                    .45,
-                    .45,
-                    .25,
-                    12
-                ),
-                wheelMaterial
-            );
-
-        wheel1.rotation.z =
-            Math.PI / 2;
-
-        wheel1.position.set(
-            x +
-            Math.sin(rotation) *
-            side,
-
-            .5,
-
-            z +
-            Math.cos(rotation) *
-            side
-        );
-
-        scene.add(wheel1);
-
-    }
-
 }
 
-
-// carros espalhados
 
 for (
     let i = 0;
@@ -1275,7 +1368,8 @@ for (
             0
         );
 
-    } else {
+    }
+    else {
 
         createCar(
             road,
@@ -1288,20 +1382,14 @@ for (
 }
 
 
-// ============================================================
-// CONTROLES
-// ============================================================
+/* =========================================================
+   CONTROLES FPS
+========================================================= */
 
 const controls =
     new PointerLockControls(
         camera,
         document.body
-    );
-
-
-const menu =
-    document.getElementById(
-        "menu"
     );
 
 
@@ -1313,7 +1401,7 @@ const playButton =
 
 playButton.addEventListener(
     "click",
-    (event) => {
+    event => {
 
         event.stopPropagation();
 
@@ -1345,9 +1433,9 @@ controls.addEventListener(
 );
 
 
-// ============================================================
-// TECLADO
-// ============================================================
+/* =========================================================
+   TECLADO
+========================================================= */
 
 const keys = {
 
@@ -1419,9 +1507,9 @@ window.addEventListener(
 );
 
 
-// ============================================================
-// CONTROLES MOBILE
-// ============================================================
+/* =========================================================
+   MOBILE
+========================================================= */
 
 function mobileButton(
     id,
@@ -1442,6 +1530,9 @@ function mobileButton(
 
             keys[key] = true;
 
+        },
+        {
+            passive: false
         }
     );
 
@@ -1454,6 +1545,9 @@ function mobileButton(
 
             keys[key] = false;
 
+        },
+        {
+            passive: false
         }
     );
 
@@ -1470,6 +1564,16 @@ function mobileButton(
 
     button.addEventListener(
         "mouseup",
+        () => {
+
+            keys[key] = false;
+
+        }
+    );
+
+
+    button.addEventListener(
+        "mouseleave",
         () => {
 
             keys[key] = false;
@@ -1501,31 +1605,31 @@ mobileButton(
 );
 
 
-// ============================================================
-// COLISÃO SIMPLES
-// ============================================================
+/* =========================================================
+   LIMITES DA CIDADE
+========================================================= */
 
-const playerRadius = 1;
-
-
-function canMove(
+function validPosition(
     position
 ) {
-
-    // limite da cidade
 
     if (
         Math.abs(position.x) >
         CITY_SIZE - 5
     ) {
+
         return false;
+
     }
+
 
     if (
         Math.abs(position.z) >
         CITY_SIZE - 5
     ) {
+
         return false;
+
     }
 
 
@@ -1534,9 +1638,83 @@ function canMove(
 }
 
 
-// ============================================================
-// LOOP
-// ============================================================
+/* =========================================================
+   LOCALIZAÇÃO
+========================================================= */
+
+function updateLocation() {
+
+    const x =
+        Math.round(
+            camera.position.x
+        );
+
+
+    const z =
+        Math.round(
+            camera.position.z
+        );
+
+
+    const location =
+        document.getElementById(
+            "location"
+        );
+
+
+    if (
+        Math.abs(x) < 30 &&
+        Math.abs(z) < 30
+    ) {
+
+        location.textContent =
+            "Distrito Central";
+
+    }
+
+    else if (
+        x > 0 &&
+        z > 0
+    ) {
+
+        location.textContent =
+            "Distrito Leste";
+
+    }
+
+    else if (
+        x < 0 &&
+        z > 0
+    ) {
+
+        location.textContent =
+            "Distrito Sul";
+
+    }
+
+    else if (
+        x > 0 &&
+        z < 0
+    ) {
+
+        location.textContent =
+            "Distrito Norte";
+
+    }
+
+    else {
+
+        location.textContent =
+            "Distrito Oeste";
+
+    }
+
+}
+
+
+/* =========================================================
+   LOOP DO JOGO
+========================================================= */
 
 const clock =
     new THREE.Clock();
@@ -1618,7 +1796,7 @@ function animate() {
 
 
         if (
-            !canMove(
+            !validPosition(
                 camera.position
             )
         ) {
@@ -1643,82 +1821,9 @@ function animate() {
 }
 
 
-// ============================================================
-// LOCALIZAÇÃO
-// ============================================================
-
-function updateLocation() {
-
-    const x =
-        Math.round(
-            camera.position.x
-        );
-
-    const z =
-        Math.round(
-            camera.position.z
-        );
-
-
-    const location =
-        document.getElementById(
-            "location"
-        );
-
-
-    if (
-        Math.abs(x) < 30 &&
-        Math.abs(z) < 30
-    ) {
-
-        location.textContent =
-            "Distrito Central";
-
-    }
-
-    else if (
-        x > 0 &&
-        z > 0
-    ) {
-
-        location.textContent =
-            "Distrito Leste";
-
-    }
-
-    else if (
-        x < 0 &&
-        z > 0
-    ) {
-
-        location.textContent =
-            "Distrito Sul";
-
-    }
-
-    else if (
-        x > 0 &&
-        z < 0
-    ) {
-
-        location.textContent =
-            "Distrito Norte";
-
-    }
-
-    else {
-
-        location.textContent =
-            "Distrito Oeste";
-
-    }
-
-}
-
-
-// ============================================================
-// RESIZE
-// ============================================================
+/* =========================================================
+   RESIZE
+========================================================= */
 
 window.addEventListener(
     "resize",
@@ -1728,7 +1833,9 @@ window.addEventListener(
             window.innerWidth /
             window.innerHeight;
 
+
         camera.updateProjectionMatrix();
+
 
         renderer.setSize(
             window.innerWidth,
@@ -1739,16 +1846,34 @@ window.addEventListener(
 );
 
 
-// ============================================================
-// INICIAR
-// ============================================================
+/* =========================================================
+   INICIALIZAÇÃO
+========================================================= */
 
-document.getElementById(
-    "loading"
-).style.display = "none";
+loading.style.display =
+    "none";
+
+menu.style.display =
+    "flex";
 
 
 animate();
+
+
+/* =========================================================
+   TRATAMENTO DE ERRO
+========================================================= */
+
+window.addEventListener(
+    "error",
+    event => {
+
+        console.error(
+            event.error
+        );
+
+    }
+);
 
 </script>
 
