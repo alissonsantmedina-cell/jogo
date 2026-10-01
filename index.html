@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Cidade 3D</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #111;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+canvas {
+    display: block;
+}
+
+#menu {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        linear-gradient(
+            rgba(0,0,0,.55),
+            rgba(0,0,0,.78)
+        );
+
+    color: white;
+
+    cursor: pointer;
+}
+
+.menu-box {
+    width: min(90%, 520px);
+
+    padding: 35px;
+
+    background: rgba(15,15,20,.92);
+
+    border: 1px solid rgba(255,255,255,.15);
+
+    border-radius: 18px;
+
+    text-align: center;
+
+    box-shadow:
+        0 20px 80px rgba(0,0,0,.5);
+}
+
+.menu-box h1 {
+    margin: 0 0 10px;
+
+    font-size: 42px;
+    letter-spacing: 3px;
+}
+
+.menu-box p {
+    color: #bbb;
+    line-height: 1.6;
+}
+
+.play-button {
+    margin-top: 20px;
+
+    padding: 15px 35px;
+
+    border: none;
+    border-radius: 10px;
+
+    background: #ffffff;
+    color: #111;
+
+    font-size: 17px;
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.play-button:hover {
+    transform: scale(1.04);
+}
+
+#hud {
+
+    position: fixed;
+
+    top: 15px;
+    left: 15px;
+
+    z-index: 10;
+
+    padding: 12px 16px;
+
+    color: white;
+
+    background: rgba(0,0,0,.5);
+
+    border-radius: 10px;
+
+    font-size: 13px;
+
+    pointer-events: none;
+
+    user-select: none;
+}
+
+#hud-title {
+
+    font-size: 18px;
+
+    font-weight: bold;
+
+    margin-bottom: 5px;
+}
+
+#crosshair {
+
+    position: fixed;
+
+    left: 50%;
+    top: 50%;
+
+    transform: translate(-50%, -50%);
+
+    z-index: 20;
+
+    color: white;
+
+    font-size: 22px;
+
+    text-shadow:
+        0 0 5px black;
+
+    pointer-events: none;
+
+    user-select: none;
+}
+
+#location {
+
+    position: fixed;
+
+    bottom: 18px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    z-index: 10;
+
+    color: white;
+
+    background: rgba(0,0,0,.45);
+
+    padding: 8px 15px;
+
+    border-radius: 20px;
+
+    font-size: 13px;
+
+    pointer-events: none;
+}
+
+#loading {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 200;
+
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    background: #111;
+
+    color: white;
+
+    font-size: 22px;
+}
+
+.mobile-controls {
+
+    display: none;
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 30;
+
+    pointer-events: none;
+}
+
+.mobile-btn {
+
+    position: absolute;
+
+    width: 58px;
+    height: 58px;
+
+    border-radius: 50%;
+
+    border: 1px solid rgba(255,255,255,.25);
+
+    background: rgba(0,0,0,.35);
+
+    color: white;
+
+    font-size: 22px;
+
+    pointer-events: auto;
+
+    user-select: none;
+}
+
+#forward {
+    bottom: 130px;
+    left: 85px;
+}
+
+#backward {
+    bottom: 20px;
+    left: 85px;
+}
+
+#left {
+    bottom: 75px;
+    left: 20px;
+}
+
+#right {
+    bottom: 75px;
+    left: 150px;
+}
+
+@media (max-width: 700px) {
+
+    .mobile-controls {
+        display: block;
+    }
+
+    #hud {
+        font-size: 11px;
+    }
+
+    #hud-title {
+        font-size: 14px;
+    }
+
+    .menu-box h1 {
+        font-size: 30px;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="loading">
+    Construindo cidade...
+</div>
+
+<div id="menu">
+
+    <div class="menu-box">
+
+        <h1>🏙️ CIDADE 3D</h1>
+
+        <p>
+            Um pequeno mundo aberto experimental.
+        </p>
+
+        <p>
+            Explore as ruas, caminhe pelos quarteirões
+            e descubra a cidade.
+        </p>
+
+        <p>
+            <b>W A S D</b> para andar<br>
+            <b>Mouse</b> para olhar
+        </p>
+
+        <button class="play-button">
+            ENTRAR NA CIDADE
+        </button>
+
+    </div>
+
+</div>
+
+<div id="hud">
+
+    <div id="hud-title">
+        CIDADE 3D
+    </div>
+
+    <div>W A S D — movimentação</div>
+    <div>Mouse — câmera</div>
+    <div>ESC — liberar câmera</div>
+
+</div>
+
+<div id="crosshair">
+    +
+</div>
+
+<div id="location">
+    Distrito Central
+</div>
+
+<div class="mobile-controls">
+
+    <button class="mobile-btn" id="forward">▲</button>
+    <button class="mobile-btn" id="backward">▼</button>
+    <button class="mobile-btn" id="left">◀</button>
+    <button class="mobile-btn" id="right">▶</button>
+
+</div>
+
+
+<script type="module">
+
+import * as THREE from
+"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+
+import {
+    PointerLockControls
+}
+from
+"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/controls/PointerLockControls.js";
+
+
+// ============================================================
+// CONFIGURAÇÃO
+// ============================================================
+
+const CITY_SIZE = 260;
+
+const ROAD_SPACING = 50;
+
+const ROAD_WIDTH = 14;
+
+const PLAYER_HEIGHT = 2;
+
+const PLAYER_SPEED = 18;
+
+
+// ============================================================
+// CENA
+// ============================================================
+
+const scene =
+    new THREE.Scene();
+
+scene.background =
+    new THREE.Color(0x83c8ee);
+
+scene.fog =
+    new THREE.Fog(
+        0x83c8ee,
+        100,
+        420
+    );
+
+
+// ============================================================
+// CÂMERA
+// ============================================================
+
+const camera =
+    new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth /
+        window.innerHeight,
+        0.1,
+        1200
+    );
+
+camera.position.set(
+    0,
+    PLAYER_HEIGHT,
+    30
+);
+
+
+// ============================================================
+// RENDERER
+// ============================================================
+
+const renderer =
+    new THREE.WebGLRenderer({
+        antialias: true
+    });
+
+renderer.setSize(
+    window.innerWidth,
+    window.innerHeight
+);
+
+renderer.setPixelRatio(
+    Math.min(
+        window.devicePixelRatio,
+        2
+    )
+);
+
+renderer.shadowMap.enabled = true;
+
+renderer.shadowMap.type =
+    THREE.PCFSoftShadowMap;
+
+document.body.appendChild(
+    renderer.domElement
+);
+
+
+// ============================================================
+// ILUMINAÇÃO
+// ============================================================
+
+const skyLight =
+    new THREE.HemisphereLight(
+        0xffffff,
+        0x4b5b42,
+        2
+    );
+
+scene.add(skyLight);
+
+
+const sun =
+    new THREE.DirectionalLight(
+        0xffffff,
+        3
+    );
+
+sun.position.set(
+    120,
+    180,
+    80
+);
+
+sun.castShadow = true;
+
+sun.shadow.mapSize.width =
+    2048;
+
+sun.shadow.mapSize.height =
+    2048;
+
+sun.shadow.camera.left =
+    -300;
+
+sun.shadow.camera.right =
+    300;
+
+sun.shadow.camera.top =
+    300;
+
+sun.shadow.camera.bottom =
+    -300;
+
+scene.add(sun);
+
+
+// ============================================================
+// MATERIAIS
+// ============================================================
+
+const materials = {
+
+    grass:
+        new THREE.MeshStandardMaterial({
+            color: 0x4f8047
+        }),
+
+    road:
+        new THREE.MeshStandardMaterial({
+            color: 0x292b2f,
+            roughness: .95
+        }),
+
+    sidewalk:
+        new THREE.MeshStandardMaterial({
+            color: 0x999999,
+            roughness: .9
+        }),
+
+    roadLine:
+        new THREE.MeshBasicMaterial({
+            color: 0xd8c66a
+        }),
+
+    window:
+        new THREE.MeshStandardMaterial({
+            color: 0x72a8c9,
+            roughness: .25,
+            metalness: .15
+        }),
+
+    lamp:
+        new THREE.MeshStandardMaterial({
+            color: 0xffffcc,
+            emissive: 0x444400
+        }),
+
+    pole:
+        new THREE.MeshStandardMaterial({
+            color: 0x222222
+        }),
+
+    treeTrunk:
+        new THREE.MeshStandardMaterial({
+            color: 0x5b3824
+        }),
+
+    treeLeaves:
+        new THREE.MeshStandardMaterial({
+            color: 0x2f6d38
+        })
+
+};
+
+
+// ============================================================
+// CHÃO
+// ============================================================
+
+const ground =
+    new THREE.Mesh(
+        new THREE.PlaneGeometry(
+            1000,
+            1000
+        ),
+        materials.grass
+    );
+
+ground.rotation.x =
+    -Math.PI / 2;
+
+ground.receiveShadow = true;
+
+scene.add(ground);
+
+
+// ============================================================
+// FUNÇÃO CUBO
+// ============================================================
+
+function box(
+    width,
+    height,
+    depth,
+    material,
+    x,
+    y,
+    z
+) {
+
+    const geometry =
+        new THREE.BoxGeometry(
+            width,
+            height,
+            depth
+        );
+
+    const mesh =
+        new THREE.Mesh(
+            geometry,
+            material
+        );
+
+    mesh.position.set(
+        x,
+        y,
+        z
+    );
+
+    mesh.castShadow = true;
+
+    mesh.receiveShadow = true;
+
+    scene.add(mesh);
+
+    return mesh;
+}
+
+
+// ============================================================
+// RUAS
+// ============================================================
+
+function createRoadX(z) {
+
+    box(
+        CITY_SIZE * 2,
+        .12,
+        ROAD_WIDTH,
+        materials.road,
+        0,
+        .06,
+        z
+    );
+
+    // calçadas
+
+    box(
+        CITY_SIZE * 2,
+        .25,
+        3,
+        materials.sidewalk,
+        0,
+        .125,
+        z - 9
+    );
+
+    box(
+        CITY_SIZE * 2,
+        .25,
+        3,
+        materials.sidewalk,
+        0,
+        .125,
+        z + 9
+    );
+
+    // faixa central
+
+    for (
+        let x = -CITY_SIZE;
+        x < CITY_SIZE;
+        x += 12
+    ) {
+
+        box(
+            6,
+            .03,
+            .25,
+            materials.roadLine,
+            x,
+            .14,
+            z
+        );
+
+    }
+
+}
+
+
+function createRoadZ(x) {
+
+    box(
+        ROAD_WIDTH,
+        .12,
+        CITY_SIZE * 2,
+        materials.road,
+        x,
+        .06,
+        0
+    );
+
+    box(
+        3,
+        .25,
+        CITY_SIZE * 2,
+        materials.sidewalk,
+        x - 9,
+        .125,
+        0
+    );
+
+    box(
+        3,
+        .25,
+        CITY_SIZE * 2,
+        materials.sidewalk,
+        x + 9,
+        .125,
+        0
+    );
+
+    for (
+        let z = -CITY_SIZE;
+        z < CITY_SIZE;
+        z += 12
+    ) {
+
+        box(
+            .25,
+            .03,
+            6,
+            materials.roadLine,
+            x,
+            .14,
+            z
+        );
+
+    }
+
+}
+
+
+// ============================================================
+// CONSTRUIR RUAS
+// ============================================================
+
+for (
+    let i = -250;
+    i <= 250;
+    i += ROAD_SPACING
+) {
+
+    createRoadX(i);
+
+    createRoadZ(i);
+
+}
+
+
+// ============================================================
+// PRÉDIOS
+// ============================================================
+
+const buildingColors = [
+
+    0xc6c6c6,
+    0xa99f91,
+    0x8999a8,
+    0xd0b28e,
+    0x999999,
+    0xb8b0a6,
+    0x7f8991,
+    0xd1c4ad
+
+];
+
+
+function createBuilding(
+    x,
+    z,
+    width,
+    depth,
+    height
+) {
+
+    const color =
+        buildingColors[
+            Math.floor(
+                Math.random() *
+                buildingColors.length
+            )
+        ];
+
+    const material =
+        new THREE.MeshStandardMaterial({
+            color
+        });
+
+    const building =
+        box(
+            width,
+            height,
+            depth,
+            material,
+            x,
+            height / 2,
+            z
+        );
+
+
+    // --------------------------
+    // TELHADO
+    // --------------------------
+
+    const roof =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                width + .3,
+                .3,
+                depth + .3
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0x555555
+            })
+        );
+
+    roof.position.set(
+        x,
+        height + .15,
+        z
+    );
+
+    roof.castShadow = true;
+
+    scene.add(roof);
+
+
+    // --------------------------
+    // JANELAS
+    // --------------------------
+
+    const floors =
+        Math.max(
+            1,
+            Math.floor(
+                height / 4
+            )
+        );
+
+    const windowsX =
+        Math.max(
+            2,
+            Math.floor(
+                width / 3.5
+            )
+        );
+
+
+    for (
+        let floor = 0;
+        floor < floors;
+        floor++
+    ) {
+
+        const y =
+            2 +
+            floor * 4;
+
+
+        for (
+            let w = 0;
+            w < windowsX;
+            w++
+        ) {
+
+            const wx =
+                x -
+                width / 2 +
+                2 +
+                w * 3.5;
+
+
+            const window =
+                new THREE.Mesh(
+                    new THREE.BoxGeometry(
+                        1.4,
+                        1.5,
+                        .08
+                    ),
+                    materials.window
+                );
+
+            window.position.set(
+                wx,
+                y,
+                z +
+                depth / 2 +
+                .05
+            );
+
+            scene.add(window);
+
+        }
+
+    }
+
+
+    return building;
+
+}
+
+
+// ============================================================
+// QUARTEIRÕES
+// ============================================================
+
+for (
+    let bx = -225;
+    bx <= 225;
+    bx += ROAD_SPACING
+) {
+
+    for (
+        let bz = -225;
+        bz <= 225;
+        bz += ROAD_SPACING
+    ) {
+
+
+        // não colocar prédios exatamente
+        // sobre as ruas
+
+        const areaCenterX =
+            bx + ROAD_SPACING / 2;
+
+        const areaCenterZ =
+            bz + ROAD_SPACING / 2;
+
+
+        if (
+            Math.abs(areaCenterX) >
+            CITY_SIZE ||
+            Math.abs(areaCenterZ) >
+            CITY_SIZE
+        ) {
+            continue;
+        }
+
+
+        // alguns quarteirões possuem
+        // mais de um prédio
+
+        const number =
+            Math.random() > .45
+            ? 2
+            : 1;
+
+
+        for (
+            let i = 0;
+            i < number;
+            i++
+        ) {
+
+            const width =
+                13 +
+                Math.random() * 9;
+
+            const depth =
+                13 +
+                Math.random() * 9;
+
+            const height =
+                8 +
+                Math.random() * 38;
+
+
+            const offsetX =
+                (Math.random() - .5) *
+                18;
+
+            const offsetZ =
+                (Math.random() - .5) *
+                18;
+
+
+            createBuilding(
+                areaCenterX +
+                offsetX,
+
+                areaCenterZ +
+                offsetZ,
+
+                width,
+                depth,
+
+                height
+            );
+
+        }
+
+    }
+
+}
+
+
+// ============================================================
+// ÁRVORES
+// ============================================================
+
+function createTree(
+    x,
+    z
+) {
+
+    // tronco
+
+    const trunk =
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                .35,
+                .45,
+                4,
+                8
+            ),
+            materials.treeTrunk
+        );
+
+    trunk.position.set(
+        x,
+        2,
+        z
+    );
+
+    trunk.castShadow = true;
+
+    scene.add(trunk);
+
+
+    // copa
+
+    const leaves =
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                2.5,
+                12,
+                12
+            ),
+            materials.treeLeaves
+        );
+
+    leaves.position.set(
+        x,
+        5,
+        z
+    );
+
+    leaves.castShadow = true;
+
+    scene.add(leaves);
+
+}
+
+
+// colocar árvores nas áreas
+// entre prédios
+
+for (
+    let i = 0;
+    i < 150;
+    i++
+) {
+
+    const x =
+        (Math.random() - .5) *
+        480;
+
+    const z =
+        (Math.random() - .5) *
+        480;
+
+
+    // evita o centro das ruas
+
+    const nearRoadX =
+        Math.abs(
+            x % ROAD_SPACING
+        ) < 12;
+
+    const nearRoadZ =
+        Math.abs(
+            z % ROAD_SPACING
+        ) < 12;
+
+
+    if (
+        !nearRoadX &&
+        !nearRoadZ
+    ) {
+
+        createTree(
+            x,
+            z
+        );
+
+    }
+
+}
+
+
+// ============================================================
+// POSTES
+// ============================================================
+
+function createLamp(
+    x,
+    z
+) {
+
+    const pole =
+        box(
+            .18,
+            5,
+            .18,
+            materials.pole,
+            x,
+            2.5,
+            z
+        );
+
+
+    const head =
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                .35,
+                12,
+                12
+            ),
+            materials.lamp
+        );
+
+    head.position.set(
+        x,
+        5.15,
+        z
+    );
+
+    scene.add(head);
+
+}
+
+
+for (
+    let x = -225;
+    x <= 225;
+    x += 50
+) {
+
+    for (
+        let z = -225;
+        z <= 225;
+        z += 50
+    ) {
+
+        createLamp(
+            x + 7,
+            z + 7
+        );
+
+    }
+
+}
+
+
+// ============================================================
+// CARROS DECORATIVOS
+// ============================================================
+
+function createCar(
+    x,
+    z,
+    rotation
+) {
+
+    const carBody =
+        box(
+            4,
+            1.2,
+            2,
+            new THREE.MeshStandardMaterial({
+                color:
+                    buildingColors[
+                        Math.floor(
+                            Math.random() *
+                            buildingColors.length
+                        )
+                    ]
+            }),
+            x,
+            .8,
+            z
+        );
+
+    carBody.rotation.y =
+        rotation;
+
+
+    const roof =
+        box(
+            2,
+            .8,
+            1.6,
+            new THREE.MeshStandardMaterial({
+                color: 0x333333
+            }),
+            x,
+            1.7,
+            z
+        );
+
+    roof.rotation.y =
+        rotation;
+
+
+    const wheelMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x111111
+        });
+
+
+    for (
+        const side of [-1, 1]
+    ) {
+
+        const wheel1 =
+            new THREE.Mesh(
+                new THREE.CylinderGeometry(
+                    .45,
+                    .45,
+                    .25,
+                    12
+                ),
+                wheelMaterial
+            );
+
+        wheel1.rotation.z =
+            Math.PI / 2;
+
+        wheel1.position.set(
+            x +
+            Math.sin(rotation) *
+            side,
+
+            .5,
+
+            z +
+            Math.cos(rotation) *
+            side
+        );
+
+        scene.add(wheel1);
+
+    }
+
+}
+
+
+// carros espalhados
+
+for (
+    let i = 0;
+    i < 25;
+    i++
+) {
+
+    const road =
+        Math.floor(
+            Math.random() * 10
+        ) * 50 -
+        225;
+
+
+    const along =
+        Math.random() *
+        440 -
+        220;
+
+
+    if (
+        Math.random() > .5
+    ) {
+
+        createCar(
+            along,
+            road,
+            0
+        );
+
+    } else {
+
+        createCar(
+            road,
+            along,
+            Math.PI / 2
+        );
+
+    }
+
+}
+
+
+// ============================================================
+// CONTROLES
+// ============================================================
+
+const controls =
+    new PointerLockControls(
+        camera,
+        document.body
+    );
+
+
+const menu =
+    document.getElementById(
+        "menu"
+    );
+
+
+const playButton =
+    document.querySelector(
+        ".play-button"
+    );
+
+
+playButton.addEventListener(
+    "click",
+    (event) => {
+
+        event.stopPropagation();
+
+        controls.lock();
+
+    }
+);
+
+
+controls.addEventListener(
+    "lock",
+    () => {
+
+        menu.style.display =
+            "none";
+
+    }
+);
+
+
+controls.addEventListener(
+    "unlock",
+    () => {
+
+        menu.style.display =
+            "flex";
+
+    }
+);
+
+
+// ============================================================
+// TECLADO
+// ============================================================
+
+const keys = {
+
+    forward: false,
+    backward: false,
+    left: false,
+    right: false
+
+};
+
+
+window.addEventListener(
+    "keydown",
+    event => {
+
+        switch (
+            event.code
+        ) {
+
+            case "KeyW":
+                keys.forward = true;
+                break;
+
+            case "KeyS":
+                keys.backward = true;
+                break;
+
+            case "KeyA":
+                keys.left = true;
+                break;
+
+            case "KeyD":
+                keys.right = true;
+                break;
+
+        }
+
+    }
+);
+
+
+window.addEventListener(
+    "keyup",
+    event => {
+
+        switch (
+            event.code
+        ) {
+
+            case "KeyW":
+                keys.forward = false;
+                break;
+
+            case "KeyS":
+                keys.backward = false;
+                break;
+
+            case "KeyA":
+                keys.left = false;
+                break;
+
+            case "KeyD":
+                keys.right = false;
+                break;
+
+        }
+
+    }
+);
+
+
+// ============================================================
+// CONTROLES MOBILE
+// ============================================================
+
+function mobileButton(
+    id,
+    key
+) {
+
+    const button =
+        document.getElementById(
+            id
+        );
+
+
+    button.addEventListener(
+        "touchstart",
+        event => {
+
+            event.preventDefault();
+
+            keys[key] = true;
+
+        }
+    );
+
+
+    button.addEventListener(
+        "touchend",
+        event => {
+
+            event.preventDefault();
+
+            keys[key] = false;
+
+        }
+    );
+
+
+    button.addEventListener(
+        "mousedown",
+        () => {
+
+            keys[key] = true;
+
+        }
+    );
+
+
+    button.addEventListener(
+        "mouseup",
+        () => {
+
+            keys[key] = false;
+
+        }
+    );
+
+}
+
+
+mobileButton(
+    "forward",
+    "forward"
+);
+
+mobileButton(
+    "backward",
+    "backward"
+);
+
+mobileButton(
+    "left",
+    "left"
+);
+
+mobileButton(
+    "right",
+    "right"
+);
+
+
+// ============================================================
+// COLISÃO SIMPLES
+// ============================================================
+
+const playerRadius = 1;
+
+
+function canMove(
+    position
+) {
+
+    // limite da cidade
+
+    if (
+        Math.abs(position.x) >
+        CITY_SIZE - 5
+    ) {
+        return false;
+    }
+
+    if (
+        Math.abs(position.z) >
+        CITY_SIZE - 5
+    ) {
+        return false;
+    }
+
+
+    return true;
+
+}
+
+
+// ============================================================
+// LOOP
+// ============================================================
+
+const clock =
+    new THREE.Clock();
+
+
+function animate() {
+
+    requestAnimationFrame(
+        animate
+    );
+
+
+    const delta =
+        Math.min(
+            clock.getDelta(),
+            .05
+        );
+
+
+    const speed =
+        PLAYER_SPEED *
+        delta;
+
+
+    if (
+        controls.isLocked
+    ) {
+
+        const oldPosition =
+            camera.position.clone();
+
+
+        if (
+            keys.forward
+        ) {
+
+            controls.moveForward(
+                speed
+            );
+
+        }
+
+
+        if (
+            keys.backward
+        ) {
+
+            controls.moveForward(
+                -speed
+            );
+
+        }
+
+
+        if (
+            keys.left
+        ) {
+
+            controls.moveRight(
+                -speed
+            );
+
+        }
+
+
+        if (
+            keys.right
+        ) {
+
+            controls.moveRight(
+                speed
+            );
+
+        }
+
+
+        camera.position.y =
+            PLAYER_HEIGHT;
+
+
+        if (
+            !canMove(
+                camera.position
+            )
+        ) {
+
+            camera.position.copy(
+                oldPosition
+            );
+
+        }
+
+
+        updateLocation();
+
+    }
+
+
+    renderer.render(
+        scene,
+        camera
+    );
+
+}
+
+
+// ============================================================
+// LOCALIZAÇÃO
+// ============================================================
+
+function updateLocation() {
+
+    const x =
+        Math.round(
+            camera.position.x
+        );
+
+    const z =
+        Math.round(
+            camera.position.z
+        );
+
+
+    const location =
+        document.getElementById(
+            "location"
+        );
+
+
+    if (
+        Math.abs(x) < 30 &&
+        Math.abs(z) < 30
+    ) {
+
+        location.textContent =
+            "Distrito Central";
+
+    }
+
+    else if (
+        x > 0 &&
+        z > 0
+    ) {
+
+        location.textContent =
+            "Distrito Leste";
+
+    }
+
+    else if (
+        x < 0 &&
+        z > 0
+    ) {
+
+        location.textContent =
+            "Distrito Sul";
+
+    }
+
+    else if (
+        x > 0 &&
+        z < 0
+    ) {
+
+        location.textContent =
+            "Distrito Norte";
+
+    }
+
+    else {
+
+        location.textContent =
+            "Distrito Oeste";
+
+    }
+
+}
+
+
+// ============================================================
+// RESIZE
+// ============================================================
+
+window.addEventListener(
+    "resize",
+    () => {
+
+        camera.aspect =
+            window.innerWidth /
+            window.innerHeight;
+
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(
+            window.innerWidth,
+            window.innerHeight
+        );
+
+    }
+);
+
+
+// ============================================================
+// INICIAR
+// ============================================================
+
+document.getElementById(
+    "loading"
+).style.display = "none";
+
+
+animate();
+
+</script>
+
+</body>
+</html>
